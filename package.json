@@ -1,0 +1,19 @@
+{
+  "name": "curso-api-rest-javascript-movies",
+  "version": "1.0.0",
+  "description": "Curso práctico de consumo de API REST con JavaScript",
+  "main": "index.html",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/xiomaraescobar/curso-api-rest-javascript-movies.git"
+  },
+  "author": "Xiomara",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/xiomaraescobar/curso-api-rest-javascript-movies/issues"
+  },
+  "homepage": "https://github.com/xiomaraescobar/curso-api-rest-javascript-movies#readme"
+}
