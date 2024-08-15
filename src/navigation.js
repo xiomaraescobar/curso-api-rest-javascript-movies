@@ -121,7 +121,7 @@ function homePage() {
     movieDetailSection.classList.add('inactive');
     // Aca preguntamos si hay algun registro como Hijo del Array para no repetir solicitudes a la API.
     const childrenCategoriesPreview = Array.from(categoriesPreviewList.children);
-    if(!childrenCategoriesPreview.length){
+    if(childrenCategoriesPreview.length){
         // llamamos a las funciones en caso de que sea diferente a 0.
         getTrendingMoviesPreview();
         getCategoryPreview();
