@@ -10,7 +10,18 @@ const api = axios.create({
 });
 
 // Utils o Reutilizables
-function createMovies(container, movies) {
+
+const lazyLoader = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+
+        if (entry.isIntersecting) {
+            const url = entry.target.getAttribute('data-img');
+            entry.target.setAttribute('src', url);
+        }
+    });
+});
+
+function createMovies(container, movies, lazyLoad = false) {
     container.innerHTML = "";
     movies.forEach(movie => {
         // creando variable para el selector de Movie
@@ -24,7 +35,16 @@ function createMovies(container, movies) {
         const movieImg = document.createElement('img');
         movieImg.classList.add('movie-img');
         movieImg.setAttribute('alt', movie.title)
-        movieImg.setAttribute('src', 'https://image.tmdb.org/t/p/w300' + movie.poster_path);
+        movieImg.setAttribute(lazyLoad ? 'data-img' : 'src', 'https://image.tmdb.org/t/p/w300' + movie.poster_path);
+        movieImg.addEventListener('error', () => {
+            movieImg.setAttribute(
+                'src',
+                'https://as1.ftcdn.net/v2/jpg/02/99/61/74/1000_F_299617487_fPJ8v9Onthhzwnp4ftILrtSGKs1JCrbh.jpg',
+            )
+        });
+        if (lazyLoad) {
+            lazyLoader.observe(movieImg);
+        }
 
         movieContainer.appendChild(movieImg);
         container.appendChild(movieContainer);
@@ -55,7 +75,7 @@ function createCategories(container, categories) {
 async function getTrendingMoviesPreview() {
     const { data } = await api('trending/movie/day');
     const movies = data.results;
-    createMovies(trendingMoviesPreviewList, movies)
+    createMovies(trendingMoviesPreviewList, movies, true)
 }
 
 async function getCategoryPreview() {
@@ -88,7 +108,7 @@ async function getMoviesBySearch(query) {
 async function getTrendingMovies() {
     const { data } = await api('trending/movie/day');
     const movies = data.results;
-    createMovies(genericSection, movies)
+    createMovies(genericSection, movies, true)
 }
 
 async function getMovieById(id) {
