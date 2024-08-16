@@ -1,3 +1,7 @@
+let numberPage = 1;
+let maxPage;
+let infiniteScroll;
+
 searchFormBtn.addEventListener('click', 
     //location.hash = '#search=' + searchFormInput.value;
     e => searchFormInput.value !== "" ? location.hash = 'search=' + searchFormInput.value  : e.preventDefault()
@@ -14,9 +18,15 @@ arrowBtn.addEventListener('click', () => {
 // Aca se esta pendiente de cuando la pagina cargue para la navegacion.
 window.addEventListener('DOMContentLoaded', navigator, false);
 window.addEventListener('hashchange', navigator, false);
+window.addEventListener('scroll', infiniteScroll, {passive: false});
 
 
 function navigator() {
+    // Desactivamos el evento del scroll.
+    if (infiniteScroll) {
+        window.removeEventListener('scroll', infiniteScroll,{passive: false});
+        infiniteScroll = undefined;
+    }
     // Validaciones de navegacion.
     location.hash.startsWith('#trends') ? trendsPage() :
         location.hash.startsWith('#search=') ? searchPage() :
@@ -27,6 +37,13 @@ function navigator() {
                     // Se reinician valores para que el scroll siempre inicie desde la posicion 0.
                     document.body.scrollTop = 0;
                     document.documentElement.scrollTop = 0;
+                    
+                    // activamos el evento scroll siempre y cuando alla una navegacion y 
+                    // se use una function declarada en el main.js
+                    if (infiniteScroll) {
+                        window.addEventListener('scroll', infiniteScroll,{passive: false});
+                    }
+                    numberPage = 1;
 }
 
 function trendsPage() {
@@ -45,6 +62,9 @@ function trendsPage() {
 
     headerCategoryTitle.innerHTML = "Tendencias"
     getTrendingMovies();
+
+    infiniteScroll = getPaginatedTrendingMovies;
+
 }
 
 function searchPage() {
@@ -64,6 +84,9 @@ function searchPage() {
     // Realizamos la separacion de lo que escribe el usuario en el input para enviarlo como parametro de busqueda.
     const [_, searchValue] = location.hash.split('=');
     getMoviesBySearch(searchValue);
+
+    infiniteScroll = getPaginatedBySearch(searchValue);
+
 }
 
 function movieDetailsPage() {
@@ -101,10 +124,12 @@ function categoryPage() {
     const [_, categoryData] = location.hash.split('=');
     // Se realiza separacion de id y nombre, en la primera linea por medio del -
     const [categoryId, categoryName] = categoryData.split('-');
-    getMoviesByCategory(categoryId);
-
     // Aca se le agrega el nombre a el HTML.
     headerCategoryTitle.innerHTML = categoryName;
+
+    getMoviesByCategory(categoryId);
+
+    infiniteScroll = getPaginatedByCategory(categoryId)
 }
 
 function homePage() {

@@ -13,7 +13,6 @@ const api = axios.create({
 
 const lazyLoader = new IntersectionObserver((entries) => {
     entries.forEach((entry) => {
-
         if (entry.isIntersecting) {
             const url = entry.target.getAttribute('data-img');
             entry.target.setAttribute('src', url);
@@ -93,9 +92,28 @@ async function getMoviesByCategory(id) {
         },
     });
     const movies = data.results;
-    createMovies(genericSection, movies);
+    maxPage = data.total_pages;
+    createMovies(genericSection, movies, {lazyLoad: true});
 }
 
+function getPaginatedByCategory (id) {
+    return async function () {
+    const {scrollTop, scrollHeight, clientHeight} = document.documentElement;
+    const scrollIsBottom = (scrollTop + clientHeight) >= (scrollHeight - 15);
+    const pageIsNotMax = numberPage <= maxPage;
+    if (scrollIsBottom && pageIsNotMax) {
+        numberPage++;
+        const { data } = await api('discover/movie', {
+            params: {
+                'with_genres': id,
+                'page': numberPage,
+            },
+        });
+        const movies = data.results;
+        createMovies(genericSection, movies, {lazyLoad: true, clean: false})
+    }
+    }
+}
 
 async function getMoviesBySearch(query) {
     const { data } = await api('search/movie', {
@@ -104,36 +122,62 @@ async function getMoviesBySearch(query) {
         },
     });
     const movies = data.results;
+    maxPage = data.total_pages;
     createMovies(genericSection, movies);
+}
+
+function getPaginatedBySearch (query) {
+    return async function () {
+    const {scrollTop, scrollHeight, clientHeight} = document.documentElement;
+    const scrollIsBottom = (scrollTop + clientHeight) >= (scrollHeight - 15);
+    const pageIsNotMax = numberPage <= maxPage;
+    if (scrollIsBottom && pageIsNotMax) {
+        numberPage++;
+        const { data } = await api('search/movie', {
+            params: {
+                'query': query,
+                'page': numberPage,
+            },
+        });
+        const movies = data.results;
+        createMovies(genericSection, movies, {lazyLoad: true, clean: false})
+    }
+    }
 }
 
 async function getTrendingMovies() {
     const { data } = await api('trending/movie/day');
     const movies = data.results;
+    maxPage = data.total_pages;
     createMovies(genericSection, movies, {lazyLoad: true, clean: true})
 
-    const btnLoadMore = document.createElement('button');
-    btnLoadMore.innerText = "Cargar Más";
-    btnLoadMore.addEventListener('click',  getPaginatedTrendingMovies);
-    genericSection.appendChild(btnLoadMore)
+    //const btnLoadMore = document.createElement('button');
+    //btnLoadMore.innerText = "Cargar Más";
+    //btnLoadMore.addEventListener('click',  getPaginatedTrendingMovies);
+    //genericSection.appendChild(btnLoadMore)
 
 }
 
-let numberPage = 1;
 async function getPaginatedTrendingMovies() {
     numberPage++;
-    const { data } = await api('trending/movie/day', {
-        params: {
-            'page': numberPage,
-        },
-    });
-    const movies = data.results;
-    createMovies(genericSection, movies, {lazyLoad: true, clean: false})
+    const {scrollTop, scrollHeight, clientHeight} = document.documentElement;
+    const scrollIsBottom = (scrollTop + clientHeight) >= (scrollHeight - 15);
 
-    const btnLoadMore = document.createElement('button');
-    btnLoadMore.innerText = "Cargar Más";
-    btnLoadMore.addEventListener('click', getPaginatedTrendingMovies)
-    genericSection.appendChild(btnLoadMore)
+    const pageIsNotMax = numberPage < maxPage;
+    if (scrollIsBottom && pageIsNotMax) {
+        const { data } = await api('trending/movie/day', {
+            params: {
+                'page': numberPage,
+            },
+        });
+        const movies = data.results;
+        createMovies(genericSection, movies, {lazyLoad: true, clean: false})
+    }
+
+    //const btnLoadMore = document.createElement('button');
+    //btnLoadMore.innerText = "Cargar Más";
+    ////btnLoadMore.addEventListener('click', getPaginatedTrendingMovies)
+    //genericSection.appendChild(btnLoadMore)
 }
 
 async function getMovieById(id) {
